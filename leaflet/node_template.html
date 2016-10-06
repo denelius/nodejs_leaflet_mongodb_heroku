@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+
+<!-- 
+Chrome - Origin null is not allowed by Access-Control-Allow-Origin
+http://stackoverflow.com/questions/8456538/origin-null-is-not-allowed-by-access-control-allow-origin
+-->
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>FOSS4G 2016 - Bonn Germany</title>
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.css" />
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet" href="stylesheets/style.css" />
+
+    <!-- Custom styles for this template -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.js"></script>
+
+
+  </head>
+  <body>
+  
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <ul class="nav navbar-nav" style="float: right">
+        <li><a href="#about">Logout</a></li>
+        <li><a href="#">1Spatial logo</a></li>
+      </ul>
+      <a class="navbar-brand" href="#">FOSS4G 2016 - Bonn Germany</a>
+      <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Home</a></li>
+          </ul>
+       </div>
+    </div>
+
+    <div id="main_content_wrap" class="outer">
+        <div id="map" class="map"></div>
+    </div>
+   
+    <div id="leg_title">
+        <span id="leg_items">Map Legend</span>
+    </div>
+    <div id="leg">
+        <input type="checkbox" id="points" checked><span id="leg_items">points</span><br>
+        <input type="checkbox" id="lines" checked><span id="leg_items">lines</span><br>
+        <input type="checkbox" id="polygons" checked><span id="leg_items">polygons</span><br>
+ <script>
+        var map = L.map('map').setView([40.7848, -73.9598], 14);
+
+        L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+      
+        var layers= [ "polygons", "lines","points"];
+        var arrayLength = layers.length;
+        for (var i = 0; i < arrayLength; i++) {
+            $.getJSON("data/" + layers[i] + ".json", function(data) { addLayer(data, data.name ) });
+        }
+             
+         function addLayer(layer, name) {
+            var leaf_layer;
+            if (layer.type == "MultiPoint") {
+                leaf_layer = L.geoJson(layer, { pointToLayer: function (feature, latlng) {return L.circleMarker(latlng, layer.style); }})
+                leaf_layer.bindPopup(layer.type);
+            } else if (layer.type == "MultiLineString") {
+                leaf_layer = L.geoJson(layer, {style: layer.style, zIndex:999 });
+                leaf_layer.bindPopup(layer.type);
+            } else  {
+                leaf_layer = L.geoJson(layer, {
+                    style: function(feature) {
+                        switch (feature.properties.style) {
+                        case 'Orange': return {
+                        fillColor: "#e9bc3b",
+                        color: "#ac8613",
+                        opacity: 1,
+                        fillOpacity: 0.8
+                        };
+                        case 'Blue': return {
+                        fillColor: "#0099ff",
+                        color: "#005f9d",
+                        opacity: 1,
+                        fillOpacity: 0.8
+                        };
+                    }
+                    },
+                    onEachFeature: function (feature, layer) {
+                         layer.bindPopup(feature.properties.name);
+                     }
+                 });
+            }
+            leaf_layer.addTo(map);
+            
+            $('#' + name).click(function(e) {
+                if (map.hasLayer(leaf_layer)) {
+                    map.removeLayer(leaf_layer);
+                } else {
+                    map.addLayer(leaf_layer);
+                }
+            });
+        }
+
+</script>
+</body>
+</html>
