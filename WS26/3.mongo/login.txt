@@ -1,0 +1,2 @@
+% mongo ds012345.mlab.com:56789/dbname -u <user> -p <password>
+

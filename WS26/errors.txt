@@ -1,0 +1,6 @@
+The Mixed Content Blocker blocks certain HTTP requests on HTTPS pages.
+http://stackoverflow.com/questions/18251128/why-am-i-suddenly-getting-a-blocked-loading-mixed-active-content-issue-in-fire
+https://cdnjs.com/libraries/leaflet/
+
+leaflet layer ordering
+http://gis.stackexchange.com/questions/166252/geojson-layer-order-in-leaflet-0-7-5

@@ -1,0 +1,80 @@
+extends layout.pug
+
+block content
+    #map
+    #leg_title 
+        span#leg_items Map Legend
+    #leg
+        each layer, i in jmap
+            input(id=layer.name)(type='checkbox', checked)
+            span#leg_items #{layer.name}
+            br
+    script(type='text/javascript').
+        var map = L.map('map').setView([#{lat},#{lng}], 17);
+        L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        
+        $.getJSON('/maplayers',function(result){
+            $.each(result, function(i, mlayer){
+                //alert(mlayer.name);
+                //addLayer(L.mapbox.featureLayer().loadURL('/mapjson/' + mlayer.name), mlayer.name);
+                $.getJSON('/mapjson/' + mlayer.name, function(data) { addLayer(data, mlayer.name ) });
+            });
+        });
+  
+        function addLayer(layer, name) {
+            var leaf_layer;
+            if (layer.type == "MultiPoint") {
+                leaf_layer = L.geoJson(layer, { 
+                    pointToLayer: function (feature, latlng) {
+                        var starIcon = new L.Icon({
+                        iconSize: [27, 27],
+                        iconAnchor: [13, 27],
+                        popupAnchor:  [1, -24],
+                        iconUrl: 'images/star.png'
+                });
+                return L.marker(latlng, {icon: starIcon}); 
+                   
+                }});
+                leaf_layer.bindPopup(layer.popup_name);
+            } else if (layer.name == "lines") {
+                leaf_layer = L.geoJson(layer, {
+                    style: function(feature) {
+                        return {
+                            color: "#ff0101",
+                            weight: 4,
+                            opacity: 1
+                    };
+                    },
+                    onEachFeature: function (feature, layer) {
+                         layer.bindPopup(feature.properties.id);
+                    }
+                });
+            } else  {
+                leaf_layer = L.geoJson(layer, {
+                    style: function(feature) {
+                        return {
+                            color: feature.properties.style,
+                            fillColor: feature.properties.style,
+                            opacity: 1,
+                            weight: 0,
+                            fillOpacity: 1
+                        };
+                    },
+                    onEachFeature: function (feature, layer) {
+                         layer.bindPopup(feature.properties.id);
+                    }
+                 });
+            }
+            leaf_layer.addTo(map);
+            
+            $('#' + name).click(function(e) {
+                
+                if (map.hasLayer(leaf_layer)) {
+                    map.removeLayer(leaf_layer);
+                } else {
+                    map.addLayer(leaf_layer);
+                }
+            });
+        }
